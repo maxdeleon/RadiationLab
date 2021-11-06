@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import scipy.stats as stats
+
+
 
 '''
 Sr-90 Operating Voltage: 900V
@@ -64,7 +67,7 @@ def locate_files():
     return files
 
 
-
+# plot the callibration data
 def part1():
     df = pd.read_csv('data/sr90Callibration.tsv',delimiter='\t')
     plt.figure(figsize=(10,5))
@@ -78,10 +81,31 @@ def part1():
     plt.tight_layout()
     plt.show()
 
+# find the average number of counts and
+def part2():
+    sr90df = pd.read_csv('data/Sr-90.tsv',delimiter='\t')
+    counts = np.array(sorted(sr90df['Counts']))
+    N_hat = counts.mean()
+    uncertainty = error(counts)
+    lower_bound = N_hat - uncertainty
+    upper_bound = N_hat + uncertainty
+
+    i = 0
+    for measurement in counts:
+        if lower_bound < measurement < upper_bound:
+            i += 1
+        else: pass
+    
+    print('Approximately {} % of the counts are within 1 standard deviation of the mean'.format(round(i/len(counts)*100,2)))
+
+
+
+
+
 def main():
     '''df = pd.read_csv('data/Sr-90.tsv',delimiter='\t')
     print(df)'''
-    files = locate_files()
+    #files = locate_files()
 
 
 
@@ -98,8 +122,8 @@ def main():
 
     print('Sr-90 C/M error: {}'.format(error(sr90.Counts * 6)))
     print('Sr-90 C/M error: {}'.format(error(sr90.Counts * 6)))'''
-    part1()
-    
+    #part1()
+    part2()
 
 
 
