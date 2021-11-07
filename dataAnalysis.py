@@ -72,21 +72,21 @@ def part1():
     df = pd.read_csv('data/sr90Callibration.tsv',delimiter='\t')
     plt.figure(figsize=(10,5))
     plt.title('Sr-90 Geiger-Müller Callibration Plot')
-    plt.scatter(df['Voltage'],df['Counts']/10,c='k')
+    plt.scatter(df['Voltage'],df['Counts'],c='k')
     plt.xlabel('Voltage (V)')
     plt.axvline(x=900,linestyle='--',c='r',alpha=0.7,label='Selected Operating Voltage')
-    plt.ylabel('Counts / Second')
+    plt.ylabel('Counts')
     plt.grid()
     plt.legend()
     plt.tight_layout()
-    plt.show()
+    plt.savefig('callibrationPlot.png')
 
 # find the average number of counts and
 def part2():
     sr90df = pd.read_csv('data/Sr-90.tsv',delimiter='\t')
     counts = np.array(sorted(sr90df['Counts']))
     N_hat = counts.mean()
-    uncertainty = error(counts)
+    uncertainty = np.sqrt(counts.mean())
     lower_bound = N_hat - uncertainty
     upper_bound = N_hat + uncertainty
 
@@ -95,11 +95,49 @@ def part2():
         if lower_bound < measurement < upper_bound:
             i += 1
         else: pass
-    
+
+    print('Average radiation counts {}'.format(N_hat))
+    print('Statistical error: {}'.format(uncertainty))
+    print('Number of trials: {}'.format(len(counts)))
     print('Approximately {} % of the counts are within 1 standard deviation of the mean'.format(round(i/len(counts)*100,2)))
+    
+    if i/len(counts) > 0.63:
+        print('The theoretical metric is supported by the empirical data')
+    else:
+        print('The theoretical metric is not supported by the empirical data')
 
 
 
+
+
+def part3():
+    background_df = pd.read_csv('data/background30s.tsv',delimiter='\t')
+    cs137_pb_df = pd.read_csv('data/cs-137-Pb.tsv',delimiter='\t')
+    cs137_al_df = pd.read_csv('data/cs-137-Al.tsv',delimiter='\t')
+
+    murho = 0.7
+
+     
+
+    background = background_df['Counts'].mean()
+
+    N_0 = 533 - background
+
+    pb_counts = cs137_pb_df['Counts'] - background
+    al_counts = cs137_al_df['Counts'] - background
+    pb_thicknesses = np.array([0.375,0.250,0.314,0.096,0.032,0.282,0.125])*2.54
+
+    print(background)
+    print(al_counts)
+
+
+    plt.errorbar(pb_thicknesses,pb_counts,yerr=np.sqrt(pb_counts),fmt='o')
+    pb_model = (N_0)*np.exp(-murho * pb_thicknesses)
+    plt.scatter(pb_thicknesses,pb_model,c='g')
+
+
+    plt.yscale('log')
+    plt.show()
 
 
 def main():
@@ -123,8 +161,8 @@ def main():
     print('Sr-90 C/M error: {}'.format(error(sr90.Counts * 6)))
     print('Sr-90 C/M error: {}'.format(error(sr90.Counts * 6)))'''
     #part1()
-    part2()
-
+    #part2()
+    part3()
 
 
 
